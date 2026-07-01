@@ -5,6 +5,7 @@ import (
 
 	"github.com/aidostt/task-manager/internal/model"
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
 type UserRepository interface {
@@ -21,4 +22,16 @@ type TaskRepository interface {
 	GetTasksByUserID(context.Context, uuid.UUID) ([]*model.Task, error)
 	UpdateTask(context.Context, *model.Task) error
 	DeleteTask(context.Context, uuid.UUID) error
+}
+
+type Models struct {
+	UserRepository
+	TaskRepository
+}
+
+func NewRepoModels(db *sqlx.DB) *Models {
+	return &Models{
+		NewUserRepo(db),
+		NewTaskRepo(db),
+	}
 }

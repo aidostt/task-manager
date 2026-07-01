@@ -30,7 +30,7 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, 
 	err := r.db.GetContext(ctx, user, query, id)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, errors.New("not found")
+		return nil, ErrNotFound
 	}
 	return user, err
 }
@@ -40,7 +40,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*model.Use
 	user := &model.User{}
 	err := r.db.GetContext(ctx, user, query, email)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, errors.New("not found")
+		return nil, ErrNotFound
 	}
 	return user, err
 }
