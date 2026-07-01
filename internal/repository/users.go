@@ -7,6 +7,7 @@ import (
 
 	"github.com/aidostt/task-manager/internal/model"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -19,9 +20,14 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 }
 
 func (r *UserRepo) CreateUser(ctx context.Context, user *model.User) error {
-	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2)`
 	_, err := r.db.ExecContext(ctx, query, user.Email, user.PasswordHash)
-	return err
+	if err != nil {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok && pgErr.Code == "23505" {
+			return ErrConflict
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *UserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
