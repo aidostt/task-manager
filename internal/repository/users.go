@@ -20,6 +20,7 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 }
 
 func (r *UserRepo) CreateUser(ctx context.Context, user *model.User) error {
+	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2)`
 	_, err := r.db.ExecContext(ctx, query, user.Email, user.PasswordHash)
 	if err != nil {
 		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok && pgErr.Code == "23505" {

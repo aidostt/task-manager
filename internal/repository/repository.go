@@ -24,14 +24,22 @@ type TaskRepository interface {
 	DeleteTask(context.Context, uuid.UUID) error
 }
 
+type SessionRepository interface {
+	CreateSession(context.Context, *model.Session) error
+	GetByToken(context.Context, string) (*model.Session, error)
+	DeleteSession(context.Context, string) error
+}
+
 type Models struct {
 	UserRepository
 	TaskRepository
+	SessionRepository
 }
 
 func NewRepoModels(db *sqlx.DB) *Models {
 	return &Models{
 		NewUserRepo(db),
 		NewTaskRepo(db),
+		NewSessionRepo(db),
 	}
 }
