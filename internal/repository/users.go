@@ -11,15 +11,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type UserRepo struct {
+type userRepo struct {
 	db *sqlx.DB
 }
 
-func NewUserRepo(db *sqlx.DB) *UserRepo {
-	return &UserRepo{db: db}
+func NewUserRepo(db *sqlx.DB) UserRepository {
+	return &userRepo{db: db}
 }
 
-func (r *UserRepo) CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error) {
+func (r *userRepo) CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error) {
 	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id`
 	var id uuid.UUID
 	err := r.db.GetContext(ctx, &id, query, user.Email, user.PasswordHash)
@@ -32,7 +32,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, user *model.User) (uuid.UUID,
 	return id, nil
 }
 
-func (r *UserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
+func (r *userRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	query := `SELECT * FROM users WHERE id = $1`
 	user := &model.User{}
 	err := r.db.GetContext(ctx, user, query, id)
@@ -43,7 +43,7 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, 
 	return user, err
 }
 
-func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	query := `SELECT * FROM users WHERE email = $1`
 	user := &model.User{}
 	err := r.db.GetContext(ctx, user, query, email)
@@ -53,13 +53,13 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*model.Use
 	return user, err
 }
 
-func (r *UserRepo) UpdateUser(ctx context.Context, user *model.User) error {
+func (r *userRepo) UpdateUser(ctx context.Context, user *model.User) error {
 	query := `UPDATE users SET email = $1, password_hash = $2 WHERE id = $3`
 	_, err := r.db.ExecContext(ctx, query, user.Email, user.PasswordHash, user.ID)
 	return err
 }
 
-func (r *UserRepo) DeleteUser(ctx context.Context, id uuid.UUID) error {
+func (r *userRepo) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM users WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id)
 	return err
