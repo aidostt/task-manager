@@ -9,22 +9,22 @@ import (
 	"github.com/google/uuid"
 )
 
-type Task struct {
+type TaskService struct {
 	repo repository.TaskRepository
 }
 
-func NewTaskService(repo repository.TaskRepository) *Task {
-	return &Task{repo: repo}
+func NewTaskService(repo repository.TaskRepository) *TaskService {
+	return &TaskService{repo: repo}
 }
 
-func (t *Task) Create(ctx context.Context, task *model.Task) error {
+func (t *TaskService) Create(ctx context.Context, task *model.Task) error {
 	if task == nil {
 		return errors.New("task is nil")
 	}
 	return t.repo.CreateTask(ctx, task)
 }
 
-func (t *Task) FindByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (*model.Task, error) {
+func (t *TaskService) FindByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (*model.Task, error) {
 	task, err := t.repo.GetTaskByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -35,14 +35,14 @@ func (t *Task) FindByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (*m
 	return task, nil
 }
 
-func (t *Task) FindAllByUserID(ctx context.Context, id uuid.UUID) ([]*model.Task, error) {
+func (t *TaskService) FindAllByUserID(ctx context.Context, id uuid.UUID) ([]*model.Task, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("invalid task id")
 	}
 	return t.repo.GetTasksByUserID(ctx, id)
 }
 
-func (t *Task) Update(ctx context.Context, task *model.Task) error {
+func (t *TaskService) Update(ctx context.Context, task *model.Task) error {
 	if task == nil {
 		return errors.New("task is nil")
 	}
@@ -56,7 +56,7 @@ func (t *Task) Update(ctx context.Context, task *model.Task) error {
 	return t.repo.UpdateTask(ctx, task)
 }
 
-func (t *Task) Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
+func (t *TaskService) Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
 	if id == uuid.Nil {
 		return errors.New("invalid task id")
 	}

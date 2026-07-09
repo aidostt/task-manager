@@ -9,7 +9,7 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(context.Context, *model.User) error
+	CreateUser(context.Context, *model.User) (uuid.UUID, error)
 	GetUserByEmail(context.Context, string) (*model.User, error)
 	GetUserByID(context.Context, uuid.UUID) (*model.User, error)
 	UpdateUser(context.Context, *model.User) error

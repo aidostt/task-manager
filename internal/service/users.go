@@ -3,63 +3,94 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/aidostt/task-manager/internal/model"
 	"github.com/aidostt/task-manager/internal/repository"
+	"github.com/aidostt/task-manager/pkg/jwt"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type User struct {
-	repo repository.UserRepository
+type userService struct {
+	repo           repository.UserRepository
+	sessionManager jwt.TokenManager
+	sessionRepo    repository.SessionRepository
 }
 
-func NewUserService(repo repository.UserRepository) *User {
-	return &User{repo: repo}
+func NewUserService(repo repository.UserRepository, sManager jwt.TokenManager, sRepo repository.SessionRepository) User {
+	return &userService{repo: repo, sessionManager: sManager, sessionRepo: sRepo}
 }
 
-func (s *User) RegisterUser(ctx context.Context, email, plainPassword string) error {
+func (s *userService) RegisterUser(ctx context.Context, email, plainPassword string) (string, string, error) {
 	if email == "" || plainPassword == "" {
-		return errors.New("email or password is empty")
+		return "", "", ErrInvalidCredentials
 	}
 
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil && !errors.Is(err, repository.ErrNotFound) {
-		return err
+		return "", "", fmt.Errorf("internal error: %w", err)
 	}
 	if user != nil {
-		return errors.New("user with this email already exists")
+		return "", "", ErrUserAlreadyExists
 	}
-	// пользователь не найден — продолжаем регистрацию
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(plainPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return "", "", fmt.Errorf("internal error: %w", err)
 	}
 	user = &model.User{
 		Email:        email,
 		PasswordHash: string(hashedPassword),
 	}
-	err = s.repo.CreateUser(ctx, user)
-	return err
+	user.ID, err = s.repo.CreateUser(ctx, user)
+	if err != nil {
+		if errors.Is(err, repository.ErrConflict) {
+			return "", "", ErrUserAlreadyExists
+		}
+		return "", "", fmt.Errorf("internal error: %w", err)
+	}
+	return s.createSession(ctx, user.ID)
 }
 
-func (s *User) LoginUser(ctx context.Context, email, password string) (string, string, error) {
+func (s *userService) LoginUser(ctx context.Context, email, password string) (string, string, error) {
 	if email == "" || password == "" {
-		return "", "", errors.New("email or password is empty")
+		return "", "", ErrInvalidCredentials
 	}
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", "", err
+		if errors.Is(err, repository.ErrNotFound) {
+			return "", "", ErrInvalidCredentials
+		}
+		return "", "", fmt.Errorf("internal error: %w", err)
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
-		switch {
-		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
-			return "", "", errors.New("wrong password")
-		default:
-			return "", "", err
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return "", "", ErrInvalidCredentials
 		}
+		return "", "", fmt.Errorf("internal error: %w", err)
 	}
-	//TODO: generate jwt tokens and return them
+	return s.createSession(ctx, user.ID)
+}
 
-	return "", "", nil
+func (s *userService) createSession(ctx context.Context, userID uuid.UUID) (string, string, error) {
+	accessToken, err := s.sessionManager.NewAccessToken(userID.String())
+	if err != nil {
+		return "", "", fmt.Errorf("internal error: %w", err)
+	}
+	refreshToken, err := s.sessionManager.NewRefreshToken()
+	if err != nil {
+		return "", "", fmt.Errorf("internal error: %w", err)
+	}
+	session := &model.Session{
+		UserID:    userID,
+		Token:     refreshToken,
+		ExpiresAt: time.Now().Add(s.sessionManager.RefreshTTL()),
+	}
+	err = s.sessionRepo.CreateSession(ctx, session)
+	if err != nil {
+		return "", "", fmt.Errorf("internal error: %w", err)
+	}
+	return accessToken, refreshToken, nil
 }

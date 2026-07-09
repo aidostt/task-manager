@@ -5,15 +5,16 @@ import (
 
 	"github.com/aidostt/task-manager/internal/model"
 	"github.com/aidostt/task-manager/internal/repository"
+	"github.com/aidostt/task-manager/pkg/jwt"
 	"github.com/google/uuid"
 )
 
-type UserService interface {
-	RegisterUser(context.Context, string, string) error
+type User interface {
+	RegisterUser(context.Context, string, string) (string, string, error)
 	LoginUser(context.Context, string, string) (string, string, error)
 }
 
-type TaskService interface {
+type Task interface {
 	Create(context.Context, *model.Task) error
 	FindByID(context.Context, uuid.UUID, uuid.UUID) (*model.Task, error)
 	FindAllByUserID(context.Context, uuid.UUID) ([]*model.Task, error)
@@ -22,13 +23,13 @@ type TaskService interface {
 }
 
 type Models struct {
-	UserService
-	TaskService
+	User
+	Task
 }
 
-func NewServiceModels(RepoModels *repository.Models) *Models {
+func NewServiceModels(RepoModels *repository.Models, manager jwt.TokenManager) *Models {
 	return &Models{
-		NewUserService(RepoModels.UserRepository),
+		NewUserService(RepoModels.UserRepository, manager, RepoModels.SessionRepository),
 		NewTaskService(RepoModels.TaskRepository),
 	}
 }

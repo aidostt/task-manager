@@ -14,6 +14,7 @@ type TokenManager interface {
 	NewAccessToken(string) (string, error)
 	NewRefreshToken() (string, error)
 	Parse(string) (*Claims, error)
+	RefreshTTL() time.Duration
 }
 
 type Manager struct {

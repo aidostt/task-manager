@@ -19,16 +19,17 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 	return &UserRepo{db: db}
 }
 
-func (r *UserRepo) CreateUser(ctx context.Context, user *model.User) error {
-	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2)`
-	_, err := r.db.ExecContext(ctx, query, user.Email, user.PasswordHash)
+func (r *UserRepo) CreateUser(ctx context.Context, user *model.User) (uuid.UUID, error) {
+	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id`
+	var id uuid.UUID
+	err := r.db.GetContext(ctx, &id, query, user.Email, user.PasswordHash)
 	if err != nil {
 		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok && pgErr.Code == "23505" {
-			return ErrConflict
+			return uuid.Nil, ErrConflict
 		}
-		return err
+		return uuid.Nil, err
 	}
-	return nil
+	return id, nil
 }
 
 func (r *UserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
