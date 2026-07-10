@@ -1,0 +1,12 @@
+package handler
+
+import "github.com/gin-gonic/gin"
+
+func (h *Handler) createTask(c *gin.Context) {}
+
+func (h *Handler) getTaskByID(c *gin.Context)      {}
+func (h *Handler) getTasksByUserID(c *gin.Context) {}
+
+func (h *Handler) updateTask(c *gin.Context) {}
+
+func (h *Handler) deleteTask(c *gin.Context) {}
