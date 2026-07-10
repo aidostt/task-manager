@@ -14,11 +14,6 @@ type User struct {
 }
 
 type RegisterInput struct {
-	Email        string `db:"email" json:"email"`
-	PasswordHash string `db:"password_hash" json:"password"`
-}
-
-type LoginInput struct {
-	Email    string `db:"email" json:"email"`
-	Password string `db:"password" json:"password"`
+	Email    string `json:"email"    validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
 }
