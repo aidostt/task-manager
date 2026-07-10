@@ -24,9 +24,6 @@ func NewUserService(repo repository.UserRepository, sManager jwt.TokenManager, s
 }
 
 func (s *userService) RegisterUser(ctx context.Context, email, plainPassword string) (string, string, error) {
-	if email == "" || plainPassword == "" {
-		return "", "", ErrInvalidCredentials
-	}
 
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil && !errors.Is(err, repository.ErrNotFound) {
@@ -54,9 +51,6 @@ func (s *userService) RegisterUser(ctx context.Context, email, plainPassword str
 }
 
 func (s *userService) LoginUser(ctx context.Context, email, password string) (string, string, error) {
-	if email == "" || password == "" {
-		return "", "", ErrInvalidCredentials
-	}
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
