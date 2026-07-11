@@ -17,9 +17,6 @@ func NewTaskService(repo repository.TaskRepository) Task {
 }
 
 func (t *taskService) Create(ctx context.Context, task *model.Task) (*model.Task, error) {
-	if task == nil {
-		return nil, ErrInvalidTask
-	}
 	return t.repo.CreateTask(ctx, task)
 }
 
@@ -35,16 +32,10 @@ func (t *taskService) FindByID(ctx context.Context, id uuid.UUID, userID uuid.UU
 }
 
 func (t *taskService) FindAllByUserID(ctx context.Context, id uuid.UUID) ([]*model.Task, error) {
-	if id == uuid.Nil {
-		return nil, ErrInvalidUserID
-	}
 	return t.repo.GetTasksByUserID(ctx, id)
 }
 
 func (t *taskService) Update(ctx context.Context, task *model.Task) error {
-	if task == nil {
-		return ErrInvalidTask
-	}
 	taskFromBD, err := t.repo.GetTaskByID(ctx, task.ID)
 	if err != nil {
 		return err
@@ -56,9 +47,6 @@ func (t *taskService) Update(ctx context.Context, task *model.Task) error {
 }
 
 func (t *taskService) Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
-	if id == uuid.Nil {
-		return ErrInvalidTaskID
-	}
 	task, err := t.repo.GetTaskByID(ctx, id)
 	if err != nil {
 		return err

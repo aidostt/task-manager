@@ -12,6 +12,7 @@ import (
 type User interface {
 	RegisterUser(context.Context, string, string) (string, string, error)
 	LoginUser(context.Context, string, string) (string, string, error)
+	RefreshTokens(ctx context.Context, refreshToken string) (string, string, error)
 }
 
 type Task interface {

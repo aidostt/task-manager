@@ -17,17 +17,17 @@ type Task struct {
 }
 
 type CreateTaskInput struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Status      string `json:"status"`
-	Priority    string `json:"priority"`
+	Title       string `json:"title"       binding:"required,min=1,max=255"`
+	Description string `json:"description" binding:"max=500"`
+	Status      string `json:"status"      binding:"required,oneof=todo in_progress done"`
+	Priority    string `json:"priority"    binding:"required,oneof=low medium high"`
 }
 
 type UpdateTaskInput struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Status      string `json:"status"`
-	Priority    string `json:"priority"`
+	Title       string `json:"title"       binding:"required,min=1,max=255"`
+	Description string `json:"description" binding:"max=500"`
+	Status      string `json:"status"      binding:"required,oneof=todo in_progress done"`
+	Priority    string `json:"priority"    binding:"required,oneof=low medium high"`
 }
 
 type TaskIdInput struct {

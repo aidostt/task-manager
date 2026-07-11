@@ -50,3 +50,21 @@ func (h *Handler) login(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, gin.H{"token": accessToken, "refresh": refreshToken})
 }
+
+func (h *Handler) refresh(c *gin.Context) {
+	var input model.RefreshInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input body"})
+		return
+	}
+	accessToken, refreshToken, err := h.services.User.RefreshTokens(c, input.RefreshToken)
+	if err != nil {
+		if errors.Is(err, service.ErrSessionExpired) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "session expired"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"token": accessToken, "refresh": refreshToken})
+}

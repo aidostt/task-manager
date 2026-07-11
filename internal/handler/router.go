@@ -30,6 +30,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		auth.POST("/login", h.login)
 		auth.POST("/register", h.register)
+		auth.POST("/refresh", h.refresh)
 	}
 	api := router.Group("/api", h.authMiddleware)
 	{

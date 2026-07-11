@@ -13,3 +13,7 @@ type Session struct {
 	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
+
+type RefreshInput struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
