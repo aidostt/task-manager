@@ -16,10 +16,11 @@ func NewTaskRepo(db *sqlx.DB) TaskRepository {
 	return &taskRepo{db: db}
 }
 
-func (r *taskRepo) CreateTask(ctx context.Context, task *model.Task) error {
-	query := `INSERT INTO tasks (user_id, title, description, status, priority) VALUES ($1, $2, $3, $4, $5)`
-	_, err := r.db.ExecContext(ctx, query, task.UserID, task.Title, task.Description, task.Status, task.Priority)
-	return err
+func (r *taskRepo) CreateTask(ctx context.Context, task *model.Task) (*model.Task, error) {
+	query := `INSERT INTO tasks (user_id, title, description, status, priority) VALUES ($1, $2, $3, $4, $5) RETURNING *`
+	createdTask := &model.Task{}
+	err := r.db.GetContext(ctx, createdTask, query, task.UserID, task.Title, task.Description, task.Status, task.Priority)
+	return createdTask, err
 }
 
 func (r *taskRepo) GetTaskByID(ctx context.Context, id uuid.UUID) (*model.Task, error) {

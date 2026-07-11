@@ -17,7 +17,7 @@ type UserRepository interface {
 }
 
 type TaskRepository interface {
-	CreateTask(context.Context, *model.Task) error
+	CreateTask(context.Context, *model.Task) (*model.Task, error)
 	GetTaskByID(context.Context, uuid.UUID) (*model.Task, error)
 	GetTasksByUserID(context.Context, uuid.UUID) ([]*model.Task, error)
 	UpdateTask(context.Context, *model.Task) error

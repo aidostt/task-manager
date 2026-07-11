@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/aidostt/task-manager/internal/model"
 	"github.com/aidostt/task-manager/internal/repository"
@@ -17,9 +16,9 @@ func NewTaskService(repo repository.TaskRepository) Task {
 	return &taskService{repo: repo}
 }
 
-func (t *taskService) Create(ctx context.Context, task *model.Task) error {
+func (t *taskService) Create(ctx context.Context, task *model.Task) (*model.Task, error) {
 	if task == nil {
-		return errors.New("task is nil")
+		return nil, ErrInvalidTask
 	}
 	return t.repo.CreateTask(ctx, task)
 }
@@ -30,42 +29,42 @@ func (t *taskService) FindByID(ctx context.Context, id uuid.UUID, userID uuid.UU
 		return nil, err
 	}
 	if task.UserID != userID {
-		return nil, errors.New("forbidden")
+		return nil, ErrForbidden
 	}
 	return task, nil
 }
 
 func (t *taskService) FindAllByUserID(ctx context.Context, id uuid.UUID) ([]*model.Task, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("invalid task id")
+		return nil, ErrInvalidUserID
 	}
 	return t.repo.GetTasksByUserID(ctx, id)
 }
 
 func (t *taskService) Update(ctx context.Context, task *model.Task) error {
 	if task == nil {
-		return errors.New("task is nil")
+		return ErrInvalidTask
 	}
 	taskFromBD, err := t.repo.GetTaskByID(ctx, task.ID)
 	if err != nil {
 		return err
 	}
 	if taskFromBD.UserID != task.UserID {
-		return errors.New("forbidden")
+		return ErrForbidden
 	}
 	return t.repo.UpdateTask(ctx, task)
 }
 
 func (t *taskService) Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
 	if id == uuid.Nil {
-		return errors.New("invalid task id")
+		return ErrInvalidTaskID
 	}
 	task, err := t.repo.GetTaskByID(ctx, id)
 	if err != nil {
 		return err
 	}
 	if task.UserID != userID {
-		return errors.New("forbidden")
+		return ErrForbidden
 	}
 	return t.repo.DeleteTask(ctx, id)
 }

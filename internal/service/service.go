@@ -15,7 +15,7 @@ type User interface {
 }
 
 type Task interface {
-	Create(context.Context, *model.Task) error
+	Create(context.Context, *model.Task) (*model.Task, error)
 	FindByID(context.Context, uuid.UUID, uuid.UUID) (*model.Task, error)
 	FindAllByUserID(context.Context, uuid.UUID) ([]*model.Task, error)
 	Update(context.Context, *model.Task) error

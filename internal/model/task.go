@@ -17,15 +17,19 @@ type Task struct {
 }
 
 type CreateTaskInput struct {
-	Title       string `db:"title" json:"title"`
-	Description string `db:"description" json:"description"`
-	Status      string `db:"status" json:"status"`
-	Priority    string `db:"priority" json:"priority"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
+	Priority    string `json:"priority"`
 }
 
 type UpdateTaskInput struct {
-	Title       string `db:"title" json:"title"`
-	Description string `db:"description" json:"description"`
-	Status      string `db:"status" json:"status"`
-	Priority    string `db:"priority" json:"priority"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
+	Priority    string `json:"priority"`
+}
+
+type TaskIdInput struct {
+	ID string `db:"id" json:"id"`
 }
