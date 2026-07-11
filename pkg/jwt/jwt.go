@@ -30,13 +30,22 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func NewManager(signingKey string, accessTTL, refreshTTL time.Duration) (*Manager, error) {
+func NewManager(signingKey string, accessTTLInput, refreshTTLInput string) (*Manager, error) {
 	if signingKey == "" {
-		return nil, errors.New("empty signing key")
+		return nil, ErrEmptySignature
+	}
+	accessTTL, err := time.ParseDuration(accessTTLInput)
+	if err != nil {
+		return nil, ErrInvalidTTL
+	}
+	refreshTTL, err := time.ParseDuration(refreshTTLInput)
+	if err != nil {
+		return nil, ErrInvalidTTL
 	}
 	if accessTTL < 0 || refreshTTL < 0 {
-		return nil, errors.New("invalid access TTL or refresh TTL")
+		return nil, ErrInvalidTTL
 	}
+
 	return &Manager{signingKey: signingKey, accessTTL: accessTTL, refreshTTL: refreshTTL}, nil
 }
 
