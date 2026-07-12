@@ -57,6 +57,9 @@ func (s *userService) LoginUser(ctx context.Context, email, password string) (st
 		}
 		return "", "", fmt.Errorf("internal error: %w", err)
 	}
+	if user == nil {
+		return "", "", ErrInvalidCredentials
+	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
